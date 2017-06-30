@@ -27,8 +27,9 @@ const double B22 = sqrt(L1*C1);
 const double B66 = sqrt(L2*C2);
 int main (){
    	//number of oscillators
-std::cout<<"dt = "<<h<<std::endl;
-int N = 7;
+int N;
+std::cout<<"Input the Number of Oscillators"<<std::endl;
+scanf("%d",&N);
     //integration time
 const double t1 = 0.000, t2 = 10*B22;
     //number of saved integration points
@@ -75,7 +76,6 @@ const long long points_trans = ( (t2_trans - t1_trans)/h ) + 1;
    /*--------------------------- Initial Condition -------------------------------------------------------------*/
             double v_temp[4*N];
 	    memset(&v_temp,0.0, sizeof(v_temp));
-	    std::cout<<"Primary Period ="<< B22 <<"Secondary Period" << B66 <<std::endl;
 	    int j;
             for(int ii=0; ii<2; ii++){
             	v_trans[2*ii] 	  = 0.0;
