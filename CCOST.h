@@ -11,8 +11,12 @@ void ccost_integration(std::vector<std::vector<double> > &v_out, double v[], dou
     
    double v1[4*N];
     //store initial conditions (constant history) in the solution array
-    for(int jj=0; jj<4*N; jj++){ 
-	v1[jj] = v[jj];
+    for(int jj=0; jj<N; jj++){ 
+	v1[4*jj] = v[4*jj];
+	v1[4*jj + 1] = v[4*jj + 1];
+	v1[4*jj + 2] = v[4*jj + 2];
+	v1[4*jj + 3] = v[4*jj + 3];
+	v_out[jj][0] = v[4*jj];// + v[4*jj +2];
     }
     
     /*Generate instance of object Normaldev_BM which generates normal deviates (Gaussian distribution) with mean mu and variance sigma
@@ -62,7 +66,7 @@ void ccost_integration(std::vector<std::vector<double> > &v_out, double v[], dou
 		  *(v1[4*i+1]+v1[4*i+3])-(R2*v1[4*i+3]+v1[4*i+2]/C2))) + eta1[2*i+1];
             
 	//soln update
-	v_out[i][ii] = v[4*i] + v[4*i + 2];
+	v_out[i][ii+1] = v[4*i] + v[4*i + 2];
             //update colored noise array "eta"
         	eta1[2*i] += -htauc*eta1[2*i] + sqrtdht*randn[2*i];
         	eta1[2*i+1] += -htauc*eta1[2*i+1] + sqrtdht*randn[2*i+1];
@@ -93,7 +97,7 @@ void ccost_integration(std::vector<std::vector<double> > &v_out, double v[], dou
 		     *(v1[4*i+1]+v1[4*i+3]-lam*(v1[4*j+1]+v1[4*j+3]))-(R2*v1[4*i+3]+v1[4*i+2]/C2)))+ eta1[2*i+1];
          
   	//soln update
-	v_out[i][ii] = v[4*i] + v[4*i + 2]; 
+	v_out[i][ii+1] = v[4*i];// + v[4*i + 2]; 
             //update colored noise array "eta"
         	eta1[2*i] += -htauc*eta1[2*i] + sqrtdht*randn[2*i];
         	eta1[2*i+1] += -htauc*eta1[2*i+1] + sqrtdht*randn[2*i+1];
@@ -240,7 +244,13 @@ if(lam != 0){
         	eta1[2*i] += -htauc*eta1[2*i] + sqrtdht*randn[2*i];
         	eta1[2*i+1] += -htauc*eta1[2*i+1] + sqrtdht*randn[2*i+1];
         }
-        for(int i=0;i<4*N;i++) v1[i]=v[i];
+        for(int i=0;i<4*N;i++){
+		v1[i]=v[i];
+		if(std::isnan(v1[i])) {
+			std::cout<<"Failed to Converge"<<std::endl;
+			return;
+		}
+	}
     }
 }
 }
@@ -271,7 +281,7 @@ void averagesignal(std::vector<std::vector<double>> &v,std::vector<double> &u,co
 	for(int ii = 0; ii<points ;ii++) u[ii] /= N;
 }
 
-double vstd(std::vector<double> &v, double mu){
+double vstd(std::vector<double> &v, const double mu){
 	int N = v.size();
 	double sigma = 0;
 	if(N>1){
@@ -340,8 +350,6 @@ void phasedrift_kernel(std::vector<double> &t, std::vector<std::vector<double>> 
 	}
         return;
 	}
-    
-    
     //remove the zero vaules in the p vector
     std::vector<double> tp(num1,0.0);
     
@@ -353,8 +361,8 @@ void phasedrift_kernel(std::vector<double> &t, std::vector<std::vector<double>> 
                 }
             }
     //remove p
-    std::vector<double>().swap(p);
-    
+    p.clear();
+    p.shrink_to_fit();
     std::vector<double> period(num1,0.0);
     double temp;
     int num;
@@ -366,30 +374,35 @@ void phasedrift_kernel(std::vector<double> &t, std::vector<std::vector<double>> 
             	num++;
 		}
         }
-    //remove tp
-    std::vector<double>().swap(tp);	
-    int k;
+    //remove tp	
+    tp.clear();
+    tp.shrink_to_fit();
     double T = 0.0;
     std::vector<double> phasetemp(num,0.0);
     //Eliminating Zeros from period vector
-    	k=0;
+    	kk=0;
         for(int ii=0;ii<num1;ii++){
-                if(std::abs(period[ii])>tol) {
-			phasetemp[k]=period[ii];
+                if(std::abs(period[ii])>0.0) {
+			phasetemp[kk]=period[ii];
 			T += period[ii];
-			std::cout<<"period = "<<period[ii]<<std::endl;
-			k++;
+			kk++;
 		}
         }
-    //remove period
-    std::vector<double>().swap(period);
- T /= (num1-2);
- phase_error = vstd(phasetemp,T);
+	period.clear();
+	period.shrink_to_fit();
+	T /= (kk);
+	phase_error = 0.0;
+	for(int ii = 0; ii < kk; ii++){
+		double delta;
+		delta = std::fabs(phasetemp[ii] - T);
+		phase_error += delta;
+	} 
+		phase_error /= (kk-1);
 }
 
 double phasedrift(std::vector<double> &t, std::vector<std::vector<double>> &v, const double tol, const long long points,const int N){
 	double phase;
 	phasedrift_kernel(t,v,phase,tol,points);
+	std::cout<<"phase_error = " << phase << std::endl;
 	return phase;
-	std::cout<<"phase" << phase << std::endl;
 }

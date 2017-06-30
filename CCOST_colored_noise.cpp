@@ -12,37 +12,38 @@
 
 //Working Parameters
 const double R1  = 30.9;
-const double R2  = 1800;
-const double L1  = 520e-6;
-const double L2  = 260e-6;
+const double R2  = 1000;
+const double L1  = 5.20e-4;
+const double L2  = 2.60e-4;
 const double C1  = 1.0e-13;
 const double C2  = 2.5e-14;
 const double a   = 939;
 const double b   = 3e08;
-const double lam = 0.90;// 0.99;//0.5; //Coupling Parameter: can be varied for complete diagnostics
-const double h   = 2.5e-12;
-const double tol = 1.0e-11;
+const double lam = -0.90;// 0.99;//0.5;
+const double h   = sqrt(L1*C2)*1.0e-2;
+const double tol = 1.0e-14;
 const double pi  = 4.0*atan(1.0);
+const double B22 = sqrt(L1*C1);
+const double B66 = sqrt(L2*C2);
 int main (){
    	//number of oscillators
-int N = 3;
-int NUM=1;
+std::cout<<"dt = "<<h<<std::endl;
+int N = 7;
     //integration time
-const double t1 = 0.000, t2 = 1.0e-7; //5.0e-07;/*1.0e2;*/ //time scaled
+const double t1 = 0.000, t2 = 10*B22;
     //number of saved integration points
 const long long points = ( (t2 - t1)/h ) + 1;
 	//transient integration time
-const double t1_trans = 0.0, t2_trans = 3e-6; /*5.0e3*/ //time scaled
+const double t1_trans = 0.0, t2_trans = 10000*B22;
 const long long points_trans = ( (t2_trans - t1_trans)/h ) + 1;   
 //build time vector
  double t;
 	//Open file to save time series
 	std::ofstream myfile_tsN;
 	myfile_tsN.open("CCOSTts.dat");
-//prepare time vector
-    t = t1;
-	for(int aa = 1; aa<points; aa++){
-		t += h;
+//Write time to file
+	for(int aa = 0; aa<points; aa++){
+		t = t1 + aa*h;
 		myfile_tsN << t << '\t';
 		}
 	myfile_tsN << std::endl;     
@@ -53,8 +54,8 @@ const long long points_trans = ( (t2_trans - t1_trans)/h ) + 1;
     double par[9] = {R1,R2,L1,L2,C1,C2,a,b,lam};
     double intepar=h;
     //noise parameters
-    double D = 0.0;//1.0e-7; //1.0e-04;//1.0e-3;//6.4e-9;//0.0;
-    double tau_c = 1.0e-01;
+    double D = 1.0e-7; //1.0e-04;//1.0e-3;//6.4e-9;//0.0;
+    double tau_c = 1.0e-03;
     
     
     //EM-Integration constants
@@ -72,25 +73,26 @@ const long long points_trans = ( (t2_trans - t1_trans)/h ) + 1;
 //----------------Integrate Crystal Oscillator-------------------------------------------------------
     //allocate arrays v (time series) dynamically to fix memory issues
    /*--------------------------- Initial Condition -------------------------------------------------------------*/
-            double v_temp[4*N] = {0.0};
-	    double B22 = 4.54545455e-8;
-	    double B66 = 1.51515151e-8;
+            double v_temp[4*N];
+	    memset(&v_temp,0.0, sizeof(v_temp));
+	    std::cout<<"Primary Period ="<< B22 <<"Secondary Period" << B66 <<std::endl;
 	    int j;
             for(int ii=0; ii<2; ii++){
-            	v_trans[2*ii] 	  =(distribution( generator )%100)*3.0e-05;
+            	v_trans[2*ii] 	  = 0.0;
+		v_trans[2*ii + 1] = 5.0e-5*2*pi/(B22);
             }
 	    for(int ii = 1; ii< N; ii++){
-		j = (2*ii - N)%N;
-		v_trans[4*ii]     = v_trans[0]*sin(2*pi*(j/N)/B22);
-		v_trans[4*ii + 1] = v_trans[0]*2*pi*j/(N*B22)*cos(2*pi*(j/N)/B22);
-		v_trans[4*ii + 2] = v_trans[2]*sin(2*pi*(j/N)/B66);
-		v_trans[4*ii + 3] = v_trans[2]*2*pi*j/(N*B66)*cos(2*pi*(j/N)/B66);
+		j = (ii - N)%N;
+		v_trans[4*ii]     = 5.0e-5*sin(2*pi*(j/N)/B22);
+		v_trans[4*ii + 1] = 5.0e-5*2*pi*j/(N*B22)*cos(2*pi*(j/N)/B22);
+		v_trans[4*ii + 2] = 5.0e-5*sin(2*pi*(j/N)/B66);
+		v_trans[4*ii + 3] = 5.0e-5*2*pi*j/(N*B66)*cos(2*pi*(j/N)/B66);
 
 	    }
-	double eta[2*N] = {0.0};
+	double eta[2*N];
+	memset(&eta,0.0, sizeof(eta));
 	std::vector<std::vector<double>> v(N, std::vector<double>(points, 0.0));// set up solution object
 /*--------------------------------Integrate CCOST------------------------------------------------------------*/
-//	    v.resize(N, std::vector<double>(points, 0.0));//allocate space
 	std::cout<<"Burning Transients"<<std::endl;
  	//(v:= for transient run)
             ccost_trans(v_temp,v_trans,eta,par, intepar, noise_par, seed, points_trans, N);// Transient integration, saves memory cost
