@@ -78,7 +78,7 @@ void ccost_integration(std::vector<std::vector<double> > &v_out, double v[], dou
        for(int rr = 0; rr < 2*N; rr++){
 		randn[rr] = dist1(generator);
 		dist1.reset(); //forces eta to be uncorrelated.
-    }//*/
+    		}//*/
         for(int i = 0; i < N; i++){
             j = (i+1)%N;
                    //Oscillator Array
@@ -98,7 +98,13 @@ void ccost_integration(std::vector<std::vector<double> > &v_out, double v[], dou
         	eta1[2*i] += -htauc*eta1[2*i] + sqrtdht*randn[2*i];
         	eta1[2*i+1] += -htauc*eta1[2*i+1] + sqrtdht*randn[2*i+1];
         }
-        for(int i=0;i<4*N;i++) v1[i]=v[i];
+        for(int i=0;i<4*N;i++){ 
+		if(std::isnan(v1[i])) {
+			std::cout<<"Failed to Converge"<<std::endl;
+			return;
+		}
+		v1[i]=v[i];
+	    }
         }
     }
 }
@@ -223,12 +229,12 @@ if(lam != 0){
           v[4*i]   = v1[4*i]   + h*v1[4*i+1];
             
           v[4*i+1] = v1[4*i+1] + h*(1/L1*((a-3*b*pow(v1[4*i]+v1[4*i+2]-lam*(v1[4*j]+v1[4*j+2]),2))
-		     *(v1[4*i+1]+v1[4*i+3]-lam*(v1[4*j+1]+v1[4*j+3]))-(R1*v1[4*i+1]+v1[4*i]/C1)))+ eta1[2*i];
+		     *(v1[4*i+1]+v1[4*i+3]-lam*(v1[4*j+1]+v1[4*j+3]))-(R1*v1[4*i+1]+v1[4*i]/C1))) + eta1[2*i];
             
           v[4*i+2] = v1[4*i+2] + h*v1[4*i+3];
             
           v[4*i+3] = v1[4*i+3] + h*(1/L2*((a-3*b*pow(v1[4*i]+v1[4*i+2]-lam*(v1[4*j]+v1[4*j+2]),2))
-		     *(v1[4*i+1]+v1[4*i+3]-lam*(v1[4*j+1]+v1[4*j+3]))-(R2*v1[4*i+3]+v1[4*i+2]/C2)))+ eta1[2*i+1];
+		     *(v1[4*i+1]+v1[4*i+3]-lam*(v1[4*j+1]+v1[4*j+3]))-(R2*v1[4*i+3]+v1[4*i+2]/C2))) + eta1[2*i+1];
             
             //update colored noise array "eta"
         	eta1[2*i] += -htauc*eta1[2*i] + sqrtdht*randn[2*i];
@@ -363,18 +369,21 @@ void phasedrift_kernel(std::vector<double> &t, std::vector<std::vector<double>> 
     //remove tp
     std::vector<double>().swap(tp);	
     int k;
+    double T = 0.0;
     std::vector<double> phasetemp(num,0.0);
     //Eliminating Zeros from period vector
     	k=0;
-        for(int ii=0;ii<num1-2;ii++){
+        for(int ii=0;ii<num1;ii++){
                 if(std::abs(period[ii])>tol) {
 			phasetemp[k]=period[ii];
+			T += period[ii];
+			std::cout<<"period = "<<period[ii]<<std::endl;
 			k++;
 		}
         }
     //remove period
     std::vector<double>().swap(period);
- double T = 4.54545455e-8;
+ T /= (num1-2);
  phase_error = vstd(phasetemp,T);
 }
 

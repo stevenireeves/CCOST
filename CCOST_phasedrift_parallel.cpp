@@ -93,9 +93,9 @@ int main (){
             	v_trans[ii] =(distribution( generator )%100)*3.0e-04;
             }
 	    for(int ii = 1; ii< N; ii++){
-		v_trans[4*ii] = v_trans[0]*sin(2*pi*(ii/N)/B22);
+		v_trans[4*ii]     = v_trans[0]*sin(2*pi*(ii/N)/B22);
 		v_trans[4*ii + 1] = v_trans[1]*2*pi*ii/(N*B22)*cos(2*pi*(ii/N)/B22);
-		v_trans[4*ii + 1] = v_trans[2]*sin(2*pi*(ii/N)/B66);
+		v_trans[4*ii + 2] = v_trans[2]*sin(2*pi*(ii/N)/B66);
 		v_trans[4*ii + 3] = v_trans[3]*2*pi*ii/(N*B66)*cos(2*pi*(ii/N)/B66);
 
 	    }
