@@ -12,14 +12,14 @@
 
 //Working Parameters
 const double R1  = 30.9;
-const double R2  = 1000;
+const double R2  = 1800;
 const double L1  = 520e-6;
 const double L2  = 260e-6;
 const double C1  = 1.0e-13;
 const double C2  = 2.5e-14;
 const double a   = 939;
 const double b   = 3e08;
-const double lam = 0.99;// 0.99;//0.5; //Coupling Parameter: can be varied for complete diagnostics
+const double lam = 0.90;// 0.99;//0.5; //Coupling Parameter: can be varied for complete diagnostics
 const double h   = 2.5e-12;
 const double tol = 1.0e-11;
 const double pi  = 4.0*atan(1.0);
@@ -32,7 +32,7 @@ const double t1 = 0.000, t2 = 1.0e-7; //5.0e-07;/*1.0e2;*/ //time scaled
     //number of saved integration points
 const long long points = ( (t2 - t1)/h ) + 1;
 	//transient integration time
-const double t1_trans = 0.0, t2_trans = 3e-5; /*5.0e3*/ //time scaled
+const double t1_trans = 0.0, t2_trans = 3e-6; /*5.0e3*/ //time scaled
 const long long points_trans = ( (t2_trans - t1_trans)/h ) + 1;   
 //build time vector
  double t;
@@ -53,7 +53,7 @@ const long long points_trans = ( (t2_trans - t1_trans)/h ) + 1;
     double par[9] = {R1,R2,L1,L2,C1,C2,a,b,lam};
     double intepar=h;
     //noise parameters
-    double D = 1.0e-7; //1.0e-04;//1.0e-3;//6.4e-9;//0.0;
+    double D = 0.0;//1.0e-7; //1.0e-04;//1.0e-3;//6.4e-9;//0.0;
     double tau_c = 1.0e-01;
     
     

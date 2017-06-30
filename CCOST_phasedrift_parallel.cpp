@@ -13,14 +13,14 @@
 
 //Working Parameters
 const double R1  = 30.9;
-const double R2  = 1000;
+const double R2  = 1800;
 const double L1  = 520e-6;
 const double L2  = 260e-6;
 const double C1  = 1.0e-13;
 const double C2  = 2.5e-14;
 const double a   = 939;
 const double b   = 3e08;
-const double lam = 0.99; //Coupling Parameter
+const double lam = 0.90; //Coupling Parameter
 const double h   = 2.5e-12; // Euler-Maruyama is very sensitive for this problem, need time step to be small. 
 const double tol = 1.0e-11;
 int main (){
@@ -35,7 +35,7 @@ int main (){
     double phasemax[NIT]={0};
     double freq = 0;
     //saved integration time
-    const double t1 = 0.0, t2 = 1e-07;
+    const double t1 = 0.0, t2 = 1e-06;
     //number of saved integration points
     const long long points = ( (t2 - t1)/h ) + 1;
     //transient integration time
@@ -89,14 +89,16 @@ int main (){
             double v_trans[4*N];
 	    double B22 = 4.54545455e-8;
 	    double B66 = 1.51515151e-8;
-            for(int ii=0; ii<4; ii++){
-            	v_trans[ii] =(distribution( generator )%100)*3.0e-04;
+            int j;
+            for(int ii=0; ii<2; ii++){
+            	v_trans[2*ii] 	  =(distribution( generator )%100)*3.0e-05;
             }
 	    for(int ii = 1; ii< N; ii++){
-		v_trans[4*ii]     = v_trans[0]*sin(2*pi*(ii/N)/B22);
-		v_trans[4*ii + 1] = v_trans[1]*2*pi*ii/(N*B22)*cos(2*pi*(ii/N)/B22);
-		v_trans[4*ii + 2] = v_trans[2]*sin(2*pi*(ii/N)/B66);
-		v_trans[4*ii + 3] = v_trans[3]*2*pi*ii/(N*B66)*cos(2*pi*(ii/N)/B66);
+		j = (2*ii - N)%N;
+		v_trans[4*ii]     = v_trans[0]*sin(2*pi*(j/N)/B22);
+		v_trans[4*ii + 1] = v_trans[0]*2*pi*j/(N*B22)*cos(2*pi*(j/N)/B22);
+		v_trans[4*ii + 2] = v_trans[2]*sin(2*pi*(j/N)/B66);
+		v_trans[4*ii + 3] = v_trans[2]*2*pi*j/(N*B66)*cos(2*pi*(j/N)/B66);
 
 	    }
 /*--------------------------------Integrate CCOST------------------------------------------------------------*/
