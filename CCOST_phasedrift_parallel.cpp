@@ -9,7 +9,7 @@
 #include <cstring>
 #include "CCOST.h"
 
-#define workers  4 /*How many threads to use, i.e. how many cores want to use*/
+#define workers  2 /*How many threads to use, i.e. how many cores want to use*/
 
 //Working Parameters
 const double R1  = 30.9;
