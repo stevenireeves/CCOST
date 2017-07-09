@@ -1,4 +1,4 @@
-# CCOST
+# Network of Coupled Crystal Oscillators
 C/C++ codes for the Coupled Crystal Oscillator Project
 
 CCOST_colored_noise.cpp simulates the current of a unidirectional
