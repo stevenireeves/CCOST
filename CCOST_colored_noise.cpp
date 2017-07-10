@@ -13,10 +13,10 @@
 //Working Parameters
 const double R1  = 30.9;
 const double R2  = 1000;
-const double L1  = 5.20e-2;
-const double L2  = 2.60e-2;
-const double C1  = 1.0e-11;
-const double C2  = 2.5e-12;
+const double L1  = 5.20e-4;
+const double L2  = 2.60e-4;
+const double C1  = 1.0e-13;
+const double C2  = 2.5e-14;
 const double a   = 939;
 const double b   = 3e08;
 const double lam = -0.90;// 0.99;//0.5;
@@ -55,7 +55,7 @@ const long long points_trans = ( (t2_trans - t1_trans)/h ) + 1;
     double par[9] = {R1,R2,L1,L2,C1,C2,a,b,lam};
     double intepar=h;
     //noise parameters
-    double D = 1.0e-7; //1.0e-04;//1.0e-3;//6.4e-9;//0.0;
+    double D = 1.0e-3; //1.0e-04;//1.0e-3;//6.4e-9;//0.0;
     double tau_c = 1.0e-03;
     
     

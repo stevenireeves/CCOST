@@ -2,7 +2,7 @@
 #Make file for Phase Error for fixed lambda
 CXX=g++
 RM=rm -f
-CPPFLAGS=-fopenmp -std=c++11
+CPPFLAGS=-g -fopenmp -std=c++11
 
 SRCS=CCOST_phasedrift_parallel.cpp
 OBJS=$(subst .cpp,.o, $(SRCS))

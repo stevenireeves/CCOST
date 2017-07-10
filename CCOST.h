@@ -135,7 +135,7 @@ double dmin(const double vec[], const int N){//Non-zero min
 	double k = vec[0];
 	for (int i = 0; i<N; i++)
 	{	
-		if( k > vec[i] && std::abs(vec[i])>1e-15) k = vec[i];
+		if( k > vec[i] && std::abs(vec[i])>1e-18) k = vec[i];
 	}
 	return k;
 }
@@ -299,10 +299,9 @@ double vstd(std::vector<double> &v, const double mu){
 }
 
 
-void phasedrift_kernel(std::vector<double> &t, std::vector<std::vector<double>> &v,
+void phasedrift_kernel(std::vector<double> &t, std::vector<double> &v,
 		       double& phase_error, double tol,const long long points){
     std::vector<double> p(points, 0.0);
-    int N = v.size();
     double slope; 
     double a0;
     double a1;
@@ -314,11 +313,9 @@ void phasedrift_kernel(std::vector<double> &t, std::vector<std::vector<double>> 
     //Locating times such that x(t)=0
 	for(int ii=1; ii<points-1;ii++){
 	u1 = 0.0, u2 = 0.0, u0 = 0.0;
-		//for(int k = 0; k < N; k++){
-			u1 += v[0][ii];
-			u2 += v[0][ii+1];
-			u0 += v[0][ii-1];
-		//}
+			u1 = v[ii];
+			u2 = v[ii+1];
+			u0 = v[ii-1];
     		if((u1<0.e0) && (0.e0<u2)){      
                 //Quadratic Interpolation
 	                a0 = u0/((t[ii-1]-t[ii])*(t[ii-1]-t[ii+1]));
@@ -343,13 +340,7 @@ void phasedrift_kernel(std::vector<double> &t, std::vector<std::vector<double>> 
             }
         }
     if(num1==0) {
-        std::cout<<"Not Detecting Zeros, outputting solution"<<std::endl;
-	std::ofstream myfile_err;
-    	myfile_err.open("CCOST_ERROR.dat");
-	for(int j = 0; j < N; j++){
-		for(int i = 0; i < points; i++) myfile_err<<v[j][i]<<'\t';
-			myfile_err<<std::endl;
-	}
+        std::cout<<"Not Detecting Zeros"<<std::endl;
         return;
 	}
     //remove the zero vaules in the p vector
@@ -403,7 +394,14 @@ void phasedrift_kernel(std::vector<double> &t, std::vector<std::vector<double>> 
 }
 
 double phasedrift(std::vector<double> &t, std::vector<std::vector<double>> &v, const double tol, const long long points,const int N){
-	double phase;
-	phasedrift_kernel(t,v,phase,tol,points);
+	double phase = 0.0;
+	double phase_temp[N];
+	std::vector<double> u(points, 0.0);
+	for(int ii = 0; ii< N; ii++){
+		u = v[ii];
+		phasedrift_kernel(t,u,phase_temp[ii],tol,points);
+		phase += phase_temp[ii];
+	}
+	phase /= N;
 	return phase;
 }
