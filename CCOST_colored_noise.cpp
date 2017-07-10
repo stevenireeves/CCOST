@@ -13,10 +13,10 @@
 //Working Parameters
 const double R1  = 30.9;
 const double R2  = 1000;
-const double L1  = 5.20e-4;
-const double L2  = 2.60e-4;
-const double C1  = 1.0e-13;
-const double C2  = 2.5e-14;
+const double L1  = 5.20e-2;
+const double L2  = 2.60e-2;
+const double C1  = 1.0e-11;
+const double C2  = 2.5e-12;
 const double a   = 939;
 const double b   = 3e08;
 const double lam = -0.90;// 0.99;//0.5;
@@ -35,7 +35,7 @@ const double t1 = 0.000, t2 = 10*B22;
     //number of saved integration points
 const long long points = ( (t2 - t1)/h ) + 1;
 	//transient integration time
-const double t1_trans = 0.0, t2_trans = 10000*B22;
+const double t1_trans = 0.0, t2_trans = 100000*B22;
 const long long points_trans = ( (t2_trans - t1_trans)/h ) + 1;   
 //build time vector
  double t;
@@ -77,17 +77,12 @@ const long long points_trans = ( (t2_trans - t1_trans)/h ) + 1;
             double v_temp[4*N];
 	    memset(&v_temp,0.0, sizeof(v_temp));
 	    int j;
-            for(int ii=0; ii<2; ii++){
-            	v_trans[2*ii] 	  = 0.0;
-		v_trans[2*ii + 1] = 5.0e-5*2*pi/(B22);
-            }
-	    for(int ii = 1; ii< N; ii++){
-		j = (ii - N)%N;
-		v_trans[4*ii]     = 5.0e-5*sin(2*pi*(j/N)/B22);
-		v_trans[4*ii + 1] = 5.0e-5*2*pi*j/(N*B22)*cos(2*pi*(j/N)/B22);
-		v_trans[4*ii + 2] = 5.0e-5*sin(2*pi*(j/N)/B66);
-		v_trans[4*ii + 3] = 5.0e-5*2*pi*j/(N*B66)*cos(2*pi*(j/N)/B66);
-
+            for(int ii=0; ii<N; ii++){
+		j = (2*ii-1)%N;
+		v_trans[4*ii]     = 5.0e-4*sin(2*pi*j/(N*B22));
+		v_trans[4*ii + 1] = 5.0e-4*2*pi*j/(N*B22)*cos(2*pi*j/(N*B22));
+		v_trans[4*ii + 2] = 5.0e-4*sin(2*pi*j/(N*B66));
+		v_trans[4*ii + 3] = 5.0e-4*2*pi*j/(N*B66)*cos(2*pi*j/(N*B66));
 	    }
 	double eta[2*N];
 	memset(&eta,0.0, sizeof(eta));

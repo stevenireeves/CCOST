@@ -9,15 +9,15 @@
 #include <cstring>
 #include "CCOST.h"
 
-#define workers  2 /*How many threads to use, i.e. how many cores want to use*/
+#define workers  5 /*How many threads to use, i.e. how many cores want to use*/
 
 //Working Parameters
 const double R1  = 30.9;
 const double R2  = 1800;
-const double L1  = 520e-6;
-const double L2  = 260e-6;
-const double C1  = 1.0e-13;
-const double C2  = 2.5e-14;
+const double L1  = 5.20e-4;
+const double L2  = 2.60e-4;
+const double C1  = 1.0e-10;
+const double C2  = 2.5e-11;
 const double a   = 939;
 const double b   = 3e08;
 const double lam = -0.90; //Coupling Parameter
@@ -28,10 +28,10 @@ const double B22 = sqrt(L1*C1);
 const double B66 = sqrt(L2*C2);
 int main (){
     
-    int NIT = 3;   	/* Max osccilator */
+    int NIT = 9;   	/* Max osccilator = N_initial + NIT */
     int N_initial = 3;  /* The starting number of oscillators */
     int N_max = N_initial+NIT;
-    int NUM=10;    /* How many samples to process, i.e. how many runs to average */
+    int NUM=50;    /* How many samples to process, i.e. how many runs to average */
     double phased[NIT]; /* The function of average phase data*/
     double phasemin[NIT]; /*Maxes and mins for each pattern*/
     double phasemax[NIT];
@@ -91,16 +91,12 @@ int main (){
 /*--------------------------- Initial Condition -------------------------------------------------------------*/
          double v_trans[4*N];
          int j;
-            for(int ii=0; ii<2; ii++){
-            	v_trans[2*ii] 	  = 0.0;
-				v_trans[2*ii + 1] = 5.0e-5*2*pi/(B22);
-            }
-	    for(int ii = 1; ii< N; ii++){
-			j = (ii - N)%N;
-			v_trans[4*ii]     = 5.0e-5*sin(2*pi*(j/N)/B22);
-			v_trans[4*ii + 1] = 5.0e-5*2*pi*j/(N*B22)*cos(2*pi*(j/N)/B22);
-			v_trans[4*ii + 2] = 5.0e-5*sin(2*pi*(j/N)/B66);
-			v_trans[4*ii + 3] = 5.0e-5*2*pi*j/(N*B66)*cos(2*pi*(j/N)/B66);
+            for(int ii=0; ii<N; ii++){
+		j = (2*ii-1)%N;
+		v_trans[4*ii]     = 5.0e-5*sin(2*pi*j/(N*B22));
+		v_trans[4*ii + 1] = 5.0e-5*2*pi*j/(N*B22)*cos(2*pi*j/(N*B22));
+		v_trans[4*ii + 2] = 5.0e-5*sin(2*pi*j/(N*B66));
+		v_trans[4*ii + 3] = 5.0e-5*2*pi*j/(N*B66)*cos(2*pi*j/(N*B66));
 	    }
 /*--------------------------------Integrate CCOST------------------------------------------------------------*/
 		std::vector<std::vector<double>> v;// set up solution object
@@ -128,7 +124,7 @@ int main (){
         myfile_tsN<<phased[n]<<'\t'; //mean
         myfile_tsN<<phasemin[n]<<'\t';//min
         myfile_tsN<<phasemax[n]<<'\t';//max
-	    myfile_tsN<<std::endl;
+	myfile_tsN<<std::endl;
         n++;
  }
     //Close file

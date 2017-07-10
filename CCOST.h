@@ -131,11 +131,11 @@ double vmax(std::vector<std::vector<double> > &vec){
 	return k; 
 }
 
-double dmin(const double vec[], const int N){
+double dmin(const double vec[], const int N){//Non-zero min
 	double k = vec[0];
 	for (int i = 0; i<N; i++)
 	{	
-		if( k > vec[i]) k = vec[i];
+		if( k > vec[i] && std::abs(vec[i])>1e-15) k = vec[i];
 	}
 	return k;
 }
@@ -162,7 +162,9 @@ void ccost_trans(double v[], double v_trans[], double eta1[], double par[9],doub
     
     double v1[4*N];
     //store initial conditions (constant history) in the solution array
-    for(int jj=0; jj<4*N; jj++) v1[jj] = v_trans[jj];
+    for(int jj=0; jj<4*N; jj++){
+	v1[jj] = v_trans[jj];
+	}
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //noise parameters
     //EM-Integration constants
@@ -201,7 +203,6 @@ if(lam == 0){
         
         for(int i = 0; i < N; i++){
         
-        	
             //Oscillator Array
        v[4*i]   = v1[4*i]   + h*v1[4*i+1];
             
@@ -227,7 +228,8 @@ if(lam != 0){
         //Generate normal deviates and store in array randn
         for(int i = 0; i < N; i++){
         		int j = (i+1)%N;
-        	randn[i] = dist1(generator);
+        	randn[2*i] = dist1(generator);
+        	randn[2*i + 1] = dist1(generator);
 	 	   dist1.reset(); //forces eta to be uncorrelated.*/
             //Oscillator Array
           v[4*i]   = v1[4*i]   + h*v1[4*i+1];
@@ -260,7 +262,7 @@ double vave(double v[],int N){
 	double sum=0.0;
 	double ave=0.0;
 	for(int ii=0;ii<N;ii++){
-		if(std::isnan(v[ii])==0) sum += v[ii];
+		if(std::isnan(v[ii])==0 && v[ii] > 1e-17) sum += v[ii];
 	}
 	ave = sum/N;
 	return ave;
@@ -308,15 +310,16 @@ void phasedrift_kernel(std::vector<double> &t, std::vector<std::vector<double>> 
     double A, B, C;
     double temp1, temp2;
     int num1=0;
-    double u1 = 0.0, u2 = 0.0, u0 = 0.0;
+    double u0, u1, u2;
     //Locating times such that x(t)=0
 	for(int ii=1; ii<points-1;ii++){
-		for(int k = 0; k < N; k++){
-			u1 += v[k][ii];
-			u2 += v[k][ii+1];
-			u0 += v[k][ii-1];
-		}
-    		if((u1<0) && (0<u2)){      
+	u1 = 0.0, u2 = 0.0, u0 = 0.0;
+		//for(int k = 0; k < N; k++){
+			u1 += v[0][ii];
+			u2 += v[0][ii+1];
+			u0 += v[0][ii-1];
+		//}
+    		if((u1<0.e0) && (0.e0<u2)){      
                 //Quadratic Interpolation
 	                a0 = u0/((t[ii-1]-t[ii])*(t[ii-1]-t[ii+1]));
 	                a1 = u1/((t[ii]-t[ii-1])*(t[ii]-t[ii+1]));
@@ -337,11 +340,10 @@ void phasedrift_kernel(std::vector<double> &t, std::vector<std::vector<double>> 
                 		p[ii]=t[ii]-u1/slope;//linear interpolation  */
 			} //*/
                 num1++;
-            }        
+            }
         }
-
     if(num1==0) {
-        std::cout<<"Solution Failed to Converge, outputting solution"<<std::endl;
+        std::cout<<"Not Detecting Zeros, outputting solution"<<std::endl;
 	std::ofstream myfile_err;
     	myfile_err.open("CCOST_ERROR.dat");
 	for(int j = 0; j < N; j++){
@@ -403,6 +405,5 @@ void phasedrift_kernel(std::vector<double> &t, std::vector<std::vector<double>> 
 double phasedrift(std::vector<double> &t, std::vector<std::vector<double>> &v, const double tol, const long long points,const int N){
 	double phase;
 	phasedrift_kernel(t,v,phase,tol,points);
-	std::cout<<"phase_error = " << phase << std::endl;
 	return phase;
 }
